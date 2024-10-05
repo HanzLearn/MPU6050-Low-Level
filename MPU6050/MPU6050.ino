@@ -18,7 +18,7 @@ void setup() {
 }
 
 void loop() {
-    int16_t ax, ay, az;
+    float ax, ay, az;
 
     // Read the acceleration data
     Wire.beginTransmission(MPU6050_ADDRESS);

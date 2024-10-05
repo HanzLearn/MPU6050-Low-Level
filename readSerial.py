@@ -16,7 +16,7 @@ with open('mpu6050_data.csv', mode='w', newline='') as csvfile:
             if ser.in_waiting > 0:
                 line = ser.readline().decode('utf-8').strip()
                 try:
-                    ax, ay, az = map(int, line.split(','))
+                    ax, ay, az = map(float, line.split(','))
                     writer.writerow([ax, ay, az])  # Write data to CSV
                     print(f'Ax: {ax}, Ay: {ay}, Az: {az}')
                 except ValueError:
