@@ -1,67 +1,46 @@
 #include <Wire.h>
-#define MPU_ADDRESS 0b1101000
 
-long accelX,accelY,accelZ;
-float gForceX,gForceY,gForceZ;
+#define MPU6050_ADDRESS 0x68  // MPU6050 I2C address
 
-void setupMPU()
-{
- // put your setup code here, to run once:
-Wire.beginTransmission(MPU_ADDRESS);
-Wire.write(0x6B);
-Wire.write(0b00000000);
-Wire.endTransmission();
-
-// Accelerometer config
-Wire.beginTransmission(MPU_ADDRESS);
-Wire.write(0x1C);
-Wire.write(0b00000000);
-Wire.endTransmission();
-}
+// MPU6050 Registers
+#define PWR_MGMT_1 0x6B
+#define ACCEL_XOUT_H 0x3B
 
 void setup() {
-Serial.begin(9600);
-Wire.begin();
-setupMPU();
-}
+    Serial.begin(9600);
+    Wire.begin();
 
-void recordAccelRegisters()
-{
-  Wire.beginTransmission(MPU_ADDRESS);
-  Wire.write(0x3B);
-  Wire.endTransmission();
-  Wire.requestFrom(MPU_ADDRESS,6);
-  if (Wire.available() == 6)
-  {
-    accelX = Wire.read() << 8 | Wire.read();
-    accelY = Wire.read() << 8 | Wire.read();
-    accelZ = Wire.read() << 8 | Wire.read();
-  }
-  processAccelData();
-
-}
-
-void processAccelData()
-{
-  gForceX = accelX / 16384.0;
-  gForceY = accelY / 16384.0;
-  gForceZ = accelZ / 16384.0;
-}
-
-void printData()
-{
-  Serial.println("gForceX");
-  Serial.println(gForceX);
- /* Serial.println("gForceY");
-  Serial.print(gForceY);*/
-  Serial.println("gForceZ");
-  Serial.println(gForceZ);
+    // Wake up the MPU6050 (default is sleep mode)
+    Wire.beginTransmission(MPU6050_ADDRESS);
+    Wire.write(PWR_MGMT_1); // Power management register
+    Wire.write(0);           // Set to zero to wake up the MPU6050
+    Wire.endTransmission();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+    int16_t ax, ay, az;
 
-  recordAccelRegisters();
-  printData();
-  delay(2000);
+    // Read the acceleration data
+    Wire.beginTransmission(MPU6050_ADDRESS);
+    Wire.write(ACCEL_XOUT_H); // Starting with the ACCEL_XOUT_H register
+    Wire.endTransmission(false);
+    Wire.requestFrom(MPU6050_ADDRESS, 6); // Request 6 bytes
+
+    if (Wire.available() == 6) {
+        ax = (Wire.read() << 8 | Wire.read()); // X-axis
+        ay = (Wire.read() << 8 | Wire.read()); // Y-axis
+        az = (Wire.read() << 8 | Wire.read()); // Z-axis
+
+        ax = ax / 16384.0;
+        ay = ay / 16384.0;
+        az = az / 16384.0;
+        // Send X, Y, Z values as comma-separated values
+        Serial.print(ax);
+        Serial.print(",");
+        Serial.print(ay);
+        Serial.print(",");
+        Serial.println(az);
+    }
+
+    delay(100);  // Send data every 100 ms
 }
