@@ -75,11 +75,24 @@ void setup()
 
 void loop() 
 { 
-  MPU6050 mpu;
+  // MPU6050 mpu;
+  MPU6050* pMPU =(MPU6050*) malloc(sizeof(MPU6050));
+  
   MPU6050::Acceleration myAccel;
+  MPU6050::Acceleration* pMyAccel = &myAccel;
+  if (pMPU != nullptr)
+  {
+    pMPU->readAcceleration(&myAccel);
+    myAccel.printData();
+    free(pMPU);
 
-  mpu.readAcceleration(&myAccel);
-  myAccel.printData();
+  }
+  else 
+  {
+    Serial.print("Memory Allocation failed!");
 
+  }
+  
+  
   delay(1000);
 }
